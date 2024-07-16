@@ -1,5 +1,17 @@
 <script>
-  import Counter from "$lib/Counter.svelte";
+  
+  import { onMount } from 'svelte';
+
+  let Component;
+
+  onMount(()=>{
+    console.log('mounted');
+
+    import('../assets/fileTesting.js').then(module => {
+      Component = module.default;
+    });
+
+  });
 </script>
 
 <svelte:head>
@@ -8,8 +20,10 @@
 
 <main>
   <h1 class="text-primary">Hello world!</h1>
-  <Counter />
-  <p>Visit <a href="https://svelte.dev">svelte.dev</a> to learn how to build Svelte apps. <i class="fas fa-heart fa-fw"></i></p>
+  {#if Component}
+    <svelte:component this={Component} />
+  {/if}
+  <!-- <p>Visit <a href="https://svelte.dev">svelte.dev</a> to learn how to build Svelte apps. <i class="fas fa-heart fa-fw"></i></p> -->
 </main>
 
 <style lang="scss">
