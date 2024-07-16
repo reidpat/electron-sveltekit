@@ -9,7 +9,7 @@
     "electron-builder": "^22.14.13",
     "electron-reloader": "^1.2.3",
     "sass": "^1.56.1",
-    "svelte": "^3.53.1",
+    "svelte": "^5.0.0-next.186",
     "svelte-preprocess": "^4.10.7",
     "vite": "^4.0.4"
   },
