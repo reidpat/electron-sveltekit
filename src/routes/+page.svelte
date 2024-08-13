@@ -8,15 +8,23 @@
   let error;
   let target;
 
+  let data;
+
   async function loadComponent() {
     if (browser && window.electronAPI) {
       try {
-        console.log("Attempting to read file...");
+        // const response = await fetch("/api/compile");
+        // data = await response.text();
+        // console.log(data)
+        // fileContent = data;
+        // console.log("Compile response:", response.text());
+        // console.log("Attempting to read file...");
         // Read the file content
         fileContent = await window.electronAPI.readLocalFile(
-          "C:/Coding/frames-electron-sveltekit/src/assets/test.js",
+          "C:/frames/test.js",
         );
         console.log("File content:", fileContent);
+
 
         if (!fileContent) {
           throw new Error("File content is empty");
@@ -27,7 +35,8 @@
         const blob = new Blob([fileContent], {
           type: "application/javascript",
         });
-        const url = URL.createObjectURL(blob);
+        let url = URL.createObjectURL(blob);
+        // url += `?${parseInt(Math.random() * 1000000)}`
 
         console.log("Importing module...");
         // Dynamically import the component
@@ -49,11 +58,16 @@
     }
   }
 
+  import { invalidateAll } from '$app/navigation';
   async function compile() {
     const response = await fetch("/api/compile");
+    data = await response.text();
+    // console.log("Compile response:", response.text());
+    // invalidateAll();
   }
 
   onMount(async () => {
+    console.log(data);
     await loadComponent();
   });
 </script>
@@ -65,7 +79,7 @@
 {#if DynamicComponent}
   <Widget this={DynamicComponent} />
 {:else if fileContent}
-  <pre>{fileContent}</pre>
+  <!-- <pre>{fileContent}</pre> -->
 {:else if error}
   <p>Error: {error}</p>
 {:else}

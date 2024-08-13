@@ -28,12 +28,15 @@ function createMainWindow() {
         width: mws.width,
         height: mws.height,
         webPreferences: {
+            preload: path.join(__dirname, 'preload.cjs'),
             nodeIntegration: false,
             contextIsolation: true,
             preload: path.join(__dirname, 'preload.cjs'),
             devTools: isdev || true
         }
     });
+
+    mainwindow.webContents.openDevTools();
 
     mainwindow.once("close", () => { mainwindow = null; });
 
