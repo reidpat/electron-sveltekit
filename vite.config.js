@@ -1,12 +1,20 @@
 import { sveltekit } from "@sveltejs/kit/vite";
+import { defineConfig } from 'vite';
 
-/** @type {import('vite').UserConfig} */
-const config = {
-    plugins: [sveltekit()],
-
-    server: {
-        port: 3000
+export default defineConfig({
+  plugins: [sveltekit()],
+  server: {
+    port: 3000
+  },
+  optimizeDeps: {
+    include: ['svelte/compiler']
+  },
+  build: {
+    rollupOptions: {
+      external: ['electron']
     }
-};
-
-export default config;
+  },
+  define: {
+    'process.env': {}
+  }
+});
