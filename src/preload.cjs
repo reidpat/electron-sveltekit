@@ -1,5 +1,5 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
-    readSvelteFile: (fileName) => ipcRenderer.invoke('read-svelte-file', fileName)
+  readLocalFile: (filePath) => ipcRenderer.invoke('read-local-file', filePath)
 });
