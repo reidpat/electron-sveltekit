@@ -20,6 +20,8 @@
         // console.log("Compile response:", response.text());
         // console.log("Attempting to read file...");
         // Read the file content
+
+        
         fileContent = await window.electronAPI.readLocalFile(
           "C:/frames/test.js",
         );
@@ -59,17 +61,17 @@
   }
 
   import { invalidateAll } from '$app/navigation';
+  // import {app} from 'electron'
   async function compile() {
-    const response = await fetch("/api/compile");
-    data = await response.text();
-    // console.log("Compile response:", response.text());
-    // invalidateAll();
+    // console.log(app);
+    let compile = window.electronAPI.compileSvelte("C:/frames/test.svelte", "C:/frames/test.js");
   }
 
   onMount(async () => {
     console.log(data);
     await loadComponent();
   });
+  
 </script>
 
 <a href="./api/compile">compile page</a>

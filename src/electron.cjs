@@ -1,9 +1,15 @@
 const {app, ipcMain, BrowserWindow} = require("electron");
 const serve = require("electron-serve");
 const ws = require("electron-window-state");
-try { require("electron-reloader")(module); } catch {}
-const fs = require('fs').promises;
+const fs = require('fs/promises');
 const path = require('path');
+const { rollup } = require('rollup');
+const svelte = require('rollup-plugin-svelte');
+const resolve = require('@rollup/plugin-node-resolve');
+const commonjs = require('@rollup/plugin-commonjs');
+const json = require('@rollup/plugin-json');
+
+try { require("electron-reloader")(module); } catch {}
 
 const loadURL = serve({directory: "."});
 const port = process.env.PORT || 3000;
@@ -31,7 +37,6 @@ function createMainWindow() {
             preload: path.join(__dirname, 'preload.cjs'),
             nodeIntegration: false,
             contextIsolation: true,
-            preload: path.join(__dirname, 'preload.cjs'),
             devTools: isdev || true
         }
     });
@@ -41,19 +46,80 @@ function createMainWindow() {
     mainwindow.once("close", () => { mainwindow = null; });
 
     if(!isdev) mainwindow.removeMenu();
-    else mainwindow.webContents.openDevTools();
     mws.manage(mainwindow);
 
     if(isdev) loadVite(port);
     else loadURL(mainwindow);
 
-    // For debugging
     mainwindow.webContents.on('did-finish-load', () => {
         console.log('Window loaded');
         mainwindow.webContents.executeJavaScript(`
             console.log('electronAPI available:', !!window.electronAPI);
         `);
     });
+}
+
+async function compileSvelteComponent(inputPath, outputPath) {
+    console.log('Starting Svelte component compilation');
+    console.log('Input path:', inputPath);
+    console.log('Output path:', outputPath);
+
+    try {
+        await fs.access(inputPath);
+        console.log('Input file exists');
+    } catch (error) {
+        console.error('Input file does not exist:', error);
+        throw error;
+    }
+
+    const inputOptions = {
+        input: inputPath,
+        plugins: [
+            json(),
+            svelte({
+                compilerOptions: {
+                    dev: isdev,
+                    css: 'injected',
+                    customElement: true,
+                },
+                emitCss: false
+            }),
+            resolve({
+                browser: true,
+                dedupe: ['svelte']
+            }),
+            commonjs()
+        ]
+    };
+
+    const outputOptions = {
+        format: 'es',
+        file: outputPath,
+        // name: 'CompiledComponent'
+    };
+
+    let bundle;
+    try {
+        bundle = await rollup(inputOptions);
+        console.log('Bundle created successfully');
+        
+        const { output } = await bundle.generate(outputOptions);
+        console.log('Output generated successfully');
+
+        await fs.writeFile(outputPath, output[0].code);
+        console.log('Successfully wrote compiled JS to', outputPath);
+        
+        console.log('Svelte component compiled successfully');
+        return output[0].code;
+    } catch (error) {
+        console.error('Error during compilation process:', error);
+        throw error;
+    } finally {
+        if (bundle) {
+            await bundle.close();
+            console.log('Bundle closed');
+        }
+    }
 }
 
 ipcMain.handle('read-local-file', async (event, filePath) => {
@@ -68,6 +134,22 @@ ipcMain.handle('read-local-file', async (event, filePath) => {
     }
 });
 
-app.once("ready", createMainWindow);
+ipcMain.handle('get-paths', async (event) => {
+    const inputPath = path.join(app.getAppPath(), "test.svelte");
+    const outputPath = path.join(app.getAppPath(), "test.js");
+    return {inputPath, outputPath};
+});
+
+ipcMain.handle('compile-svelte', async (event, inputPath, outputPath) => {
+    try {
+        const compiledCode = await compileSvelteComponent(inputPath, outputPath);
+        return { success: true, code: compiledCode };
+    } catch (error) {
+        console.error('Compilation failed:', error);
+        return { success: false, error: error.message };
+    }
+});
+
+app.whenReady().then(createMainWindow);
 app.on("activate", () => { if(!mainwindow) createMainWindow(); });
 app.on("window-all-closed", () => { if(process.platform !== "darwin") app.quit(); });

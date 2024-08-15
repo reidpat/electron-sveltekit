@@ -3,37 +3,38 @@ import { rollup } from 'rollup';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import svelte from 'rollup-plugin-svelte';
-import path from "path";
-import { fileURLToPath } from 'url';
+// import path from "path";
+// import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
+import log from 'electron-log/node';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
 
 
 
-export async function compileSvelteComponent(inputPath, outputPath) {
+export async function compileSvelteComponent(inputPath, outputPath, window) {
     console.log('Starting Svelte component compilation');
     console.log('NODE_ENV:', process.env.NODE_ENV);
     console.log('Input path:', inputPath);
     console.log('Output path:', outputPath);
 
-    try {
-        await fs.access(inputPath);
-        console.log('Input file exists');
-    } catch (error) {
-        console.error('Input file does not exist:', error);
-        return error;
-    }
-
+    // try {
+    //     await fs.access(inputPath);
+    //     console.log('Input file exists');
+    // } catch (error) {
+    //     console.error('Input file does not exist:', error);
+    //     return error;
+    // }
     const inputOptions = {
         input: inputPath,
         plugins: [
             json(),
             svelte({
                 compilerOptions: {
-                    dev: process.env.NODE_ENV !== 'production',
-                    css: 'injected'
+                    dev: true,
+                    css: 'injected',
+                    customElement: true,
                 },
                 emitCss: false
             }),
@@ -55,17 +56,22 @@ export async function compileSvelteComponent(inputPath, outputPath) {
     try {
         bundle = await rollup(inputOptions);
         console.log('Bundle created successfully');
+        log.info('Bundle created successfully');
         
         const { output } = await bundle.generate(outputOptions);
         console.log('Output generated successfully');
+        log.info('Output generated successfully');
 
         await fs.writeFile(outputPath, output[0].code);
         console.log('Successfully wrote compiled JS to', outputPath);
+        log.info('Successfully wrote compiled JS to', outputPath);
+        
 
         console.log('Svelte component compiled successfully');
         return output[0].code;
     } catch (error) {
         console.error('Error during compilation process:', error);
+        log.error('Error during compilation process:', error);
         return error;
     } finally {
         if (bundle) {
