@@ -13,14 +13,6 @@
   async function loadComponent() {
     if (browser && window.electronAPI) {
       try {
-        // const response = await fetch("/api/compile");
-        // data = await response.text();
-        // console.log(data)
-        // fileContent = data;
-        // console.log("Compile response:", response.text());
-        // console.log("Attempting to read file...");
-        // Read the file content
-
         
         fileContent = await window.electronAPI.readLocalFile(
           "C:/frames/test.js",
