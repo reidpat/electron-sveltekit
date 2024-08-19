@@ -11,6 +11,7 @@
   let data;
 
   export let fileName;
+  export let map;
 
   $: {
     if (fileName) {
@@ -23,10 +24,10 @@
     if (browser && window.electronAPI) {
       try {
         try {
-        fileContent = await window.electronAPI.readLocalFile(
-          `C:/frames/compiled/${fileName}.js`,
-        );
-        // console.log("File content:", fileContent);
+          fileContent = await window.electronAPI.readLocalFile(
+            `C:/frames/compiled/${fileName}.js`,
+          );
+          // console.log("File content:", fileContent);
         } catch (err) {
           await window.electronAPI.compileSvelte(
             `C:/frames/frames/${fileName}.svelte`,
@@ -36,9 +37,9 @@
             `C:/frames/compiled/${fileName}.js`,
           );
         }
-          if (!fileContent) {
-            throw new Error("File content is empty");
-          }
+        if (!fileContent) {
+          throw new Error("File content is empty");
+        }
 
         // console.log("Creating blob...");
         // Create a blob URL from the file content
@@ -69,6 +70,7 @@
   }
 
   import { invalidateAll } from "$app/navigation";
+  import TopNav from "./TopNav.svelte";
   // import {app} from 'electron'
   async function compile() {
     // console.log(app);
@@ -82,11 +84,10 @@
     // console.log(data);
     await loadComponent();
   });
+  
 </script>
-<div class="top-buttons">
-<button on:click={loadComponent}>Reload Component</button>
-<button on:click={compile}>Compile</button>
-</div>
+
+<TopNav {fileName} {loadComponent} {map}/>
 
 {#if DynamicComponent}
   <Widget this={DynamicComponent} />
@@ -99,8 +100,4 @@
 {/if}
 
 <style>
-  .top-buttons {
-    position: absolute;
-    top: 0;
-  }
 </style>

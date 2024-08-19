@@ -60,7 +60,7 @@
             ". up ."
             "left . right"
             ". down .";
-        gap: 5px;
+        gap: 0px;
         background-color: none;
     }
     button {
@@ -82,7 +82,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 2rem;
+        font-size: 3rem;
     }
     .left {
         grid-area: left;

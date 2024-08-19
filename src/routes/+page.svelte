@@ -31,6 +31,9 @@
 
     function changeCoordinates(x, y) {
         if (canMove(x, y)) {
+            if(x != 0){
+                currentCoordinates.y = 0;
+            }
             currentCoordinates.x += x;
             currentCoordinates.y += y;
             console.log(currentCoordinates);
@@ -39,6 +42,9 @@
 
     $: canMove = (x, y) => {
         if (!map) return false;
+        if(x != 0){
+            return map[currentCoordinates.x + x];
+        }
         const newX = currentCoordinates.x + x;
         const newY = currentCoordinates.y + y;
         return map[newX] && map[newX][newY] !== undefined;
@@ -62,16 +68,20 @@
     }
 
     import NavigationCluster from "$lib/NavigationCluster.svelte";
+    import MapNavigator from "../lib/MapNavigator.svelte";
 </script>
 
 <svelte:window on:keydown={handleKeyPress} />
 
 <div class="slide-container">
     {#if fileName}
-        <DynamicFrame bind:fileName />
+        <DynamicFrame bind:fileName {map}/>
     {/if}
 </div>
 <NavigationCluster {canMove} {changeCoordinates}/>
+{#if map}
+<MapNavigator mapData={map} bind:currentCoordinates {mapName} />
+{/if}
 
 <style>
     .slide-container {
