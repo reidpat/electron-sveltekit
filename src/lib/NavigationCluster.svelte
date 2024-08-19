@@ -62,6 +62,7 @@
             ". down .";
         gap: 0px;
         background-color: none;
+        overflow: hidden;
     }
     button {
         width: 50px;
@@ -72,6 +73,7 @@
         color: var(--pico-primary);
         cursor: pointer;
         position: relative;
+
     }
     .button-content {
         position: absolute;

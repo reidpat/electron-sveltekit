@@ -1,4 +1,4 @@
-const {app, ipcMain, BrowserWindow} = require("electron");
+const { app, ipcMain, BrowserWindow, Menu, MenuItem } = require("electron");
 const serve = require("electron-serve");
 const ws = require("electron-window-state");
 const fs = require('fs/promises');
@@ -9,9 +9,9 @@ const resolve = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
 const json = require('@rollup/plugin-json');
 
-try { require("electron-reloader")(module); } catch {}
+try { require("electron-reloader")(module); } catch { }
 
-const loadURL = serve({directory: "."});
+const loadURL = serve({ directory: "." });
 const port = process.env.PORT || 3000;
 const isdev = !app.isPackaged || (process.env.NODE_ENV == "development");
 let mainwindow;
@@ -45,11 +45,26 @@ function createMainWindow() {
 
     mainwindow.once("close", () => { mainwindow = null; });
 
-    if(!isdev) mainwindow.removeMenu();
+    if (!isdev) mainwindow.removeMenu();
     mws.manage(mainwindow);
 
-    if(isdev) loadVite(port);
+    if (isdev) loadVite(port);
     else loadURL(mainwindow);
+
+    const menu = new Menu();
+    menu.append(new MenuItem({
+        label: 'Inspect Element',
+        click: () => {
+            mainwindow.webContents.inspectElement(rightClickPosition.x, rightClickPosition.y);
+        }
+    }));
+
+    let rightClickPosition = null;
+
+    mainwindow.webContents.on('context-menu', (event, params) => {
+        rightClickPosition = { x: params.x, y: params.y };
+        menu.popup(mainwindow, params.x, params.y);
+    });
 
     mainwindow.webContents.on('did-finish-load', () => {
         console.log('Window loaded');
@@ -58,6 +73,9 @@ function createMainWindow() {
         `);
     });
 }
+
+
+
 
 async function compileSvelteComponent(inputPath, outputPath) {
     console.log('Starting Svelte component compilation');
@@ -102,13 +120,13 @@ async function compileSvelteComponent(inputPath, outputPath) {
     try {
         bundle = await rollup(inputOptions);
         console.log('Bundle created successfully');
-        
+
         const { output } = await bundle.generate(outputOptions);
         console.log('Output generated successfully');
 
         await fs.writeFile(outputPath, output[0].code);
         console.log('Successfully wrote compiled JS to', outputPath);
-        
+
         console.log('Svelte component compiled successfully');
         return output[0].code;
     } catch (error) {
@@ -125,19 +143,19 @@ async function compileSvelteComponent(inputPath, outputPath) {
 ipcMain.handle('read-local-file', async (event, filePath) => {
     console.log('Attempting to read file:', filePath);
     try {
-      const content = await fs.readFile(filePath, 'utf-8');
-      console.log('File read successfully');
-      return content;
+        const content = await fs.readFile(filePath, 'utf-8');
+        console.log('File read successfully');
+        return content;
     } catch (error) {
-      console.error('Error reading file:', error);
-      throw error;
+        console.error('Error reading file:', error);
+        throw error;
     }
 });
 
 ipcMain.handle('get-paths', async (event) => {
     const inputPath = path.join(app.getAppPath(), "test.svelte");
     const outputPath = path.join(app.getAppPath(), "test.js");
-    return {inputPath, outputPath};
+    return { inputPath, outputPath };
 });
 
 ipcMain.handle('compile-svelte', async (event, inputPath, outputPath) => {
@@ -151,5 +169,5 @@ ipcMain.handle('compile-svelte', async (event, inputPath, outputPath) => {
 });
 
 app.whenReady().then(createMainWindow);
-app.on("activate", () => { if(!mainwindow) createMainWindow(); });
-app.on("window-all-closed", () => { if(process.platform !== "darwin") app.quit(); });
+app.on("activate", () => { if (!mainwindow) createMainWindow(); });
+app.on("window-all-closed", () => { if (process.platform !== "darwin") app.quit(); });

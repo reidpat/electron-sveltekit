@@ -19,11 +19,14 @@ function isActive(x, y) {
 
 onMount(()=>
 console.log(mapData))
+
+
+import NumList from '~icons/mynaui/list-number';
 </script>
 
 {#if open}
 <div
-    class="map-overlay bg-base-200"
+    class="map-overlay"
     on:mouseleave={() => (open = false)}
     transition:slide={{duration: 300, easing: quintOut, axis: 'y' }}
 >
@@ -38,7 +41,7 @@ console.log(mapData))
                         open = false;
                     }}
                 >
-                    <p>{item.name}</p>
+                    {item.name}
                 </button>
             {/each}
         </div>
@@ -46,25 +49,32 @@ console.log(mapData))
     
 </div>
 {:else}
-<div
-    tabindex="0"
-    role="button"
-    class="btn m-1 absolute opacity-30"
+<button
+    class="outline navigator-icon"
     on:mouseenter={() => (open = true)}
 >
-    Map
-</div>
+    <NumList />
+</button>
 {/if}
 
 <style>
     .flex {
         display: flex;
         flex-direction: column;
+        
     }
-    .btn.absolute{
+    .flex > button {
+        height: 5rem !important;
+        width: 6rem;
+        margin: 0.5rem;
+        padding: 0px;
+        overflow: hidden;
+    }
+    .outline.navigator-icon{
         position: absolute;
         bottom:0px;
         left:0px;
+        border: none;
     }
 .map-overlay {
     position: absolute;
@@ -77,6 +87,8 @@ console.log(mapData))
     z-index: 50;
     display: flex;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: var(--pico-background-color);
+    opacity: 0.95;
 }
 
 .btn:hover, .btn:focus {
