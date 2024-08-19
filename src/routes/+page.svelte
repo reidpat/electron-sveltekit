@@ -1,81 +1,85 @@
 <script>
-  import { onMount } from "svelte";
-  import { browser } from "$app/environment";
-  import Widget from "../lib/Widget.svelte";
+    import { onMount } from "svelte";
+    import DynamicFrame from "../lib/DynamicFrame.svelte";
 
-  let DynamicComponent;
-  let fileContent;
-  let error;
-  let target;
+    let fileName;
+    let mapName = "frames-pitch";
 
-  let data;
+    let currentCoordinates = {
+        x: 0,
+        y: 0,
+    };
 
-  async function loadComponent() {
-    if (browser && window.electronAPI) {
-      try {
-        
-        fileContent = await window.electronAPI.readLocalFile(
-          "C:/frames/test.js",
-        );
-        console.log("File content:", fileContent);
+    let map;
 
-
-        if (!fileContent) {
-          throw new Error("File content is empty");
+    $: () => {
+        if (map) {
+            fileName = map[currentCoordinates.x][currentCoordinates.y].name;
+            console.log(fileName);
         }
+    };
 
-        console.log("Creating blob...");
-        // Create a blob URL from the file content
-        const blob = new Blob([fileContent], {
-          type: "application/javascript",
-        });
-        let url = URL.createObjectURL(blob);
-        // url += `?${parseInt(Math.random() * 1000000)}`
+    onMount(async () => {
+        let fileContent = await window.electronAPI.readLocalFile(
+            `C:/frames/maps/${mapName}.json`,
+        );
+        map = await JSON.parse(fileContent);
+        fileName = map[currentCoordinates.x][currentCoordinates.y].name;
+        console.log(map);
+    });
 
-        console.log("Importing module...");
-        // Dynamically import the component
-        const module = await import(/* @vite-ignore */ url);
-        console.log("Module imported:", module);
-
-        DynamicComponent = module.default;
-        console.log("Dynamic component:", DynamicComponent);
-
-        // Clean up the blob URL
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        console.error("Error loading dynamic component:", err);
-        error = err.message;
-      }
-    } else {
-      console.error("electronAPI not available");
-      error = "electronAPI not available";
+    function changeCoordinates(x, y) {
+        if(!map[currentCoordinates.x + x] || !map[currentCoordinates.x + x][currentCoordinates.y + y]) {
+            return;
+        }
+        currentCoordinates.x += x;
+        currentCoordinates.y += y;
+        fileName = map[currentCoordinates.x][currentCoordinates.y].name;
+        console.log(currentCoordinates);
     }
-  }
-
-  import { invalidateAll } from '$app/navigation';
-  // import {app} from 'electron'
-  async function compile() {
-    // console.log(app);
-    let compile = window.electronAPI.compileSvelte("C:/frames/test.svelte", "C:/frames/test.js");
-  }
-
-  onMount(async () => {
-    console.log(data);
-    await loadComponent();
-  });
-  
 </script>
 
-<a href="./api/compile">compile page</a>
-<button on:click={loadComponent}>Reload Component</button>
-<button on:click={compile}>Compile</button>
+<div>
+    {#if fileName}
+        <DynamicFrame bind:fileName={fileName} />
+    {/if}
+    <div class="map-buttons">
+        <button on:click={()=>changeCoordinates(-1, 0)}>Left</button>
+        <div class="map-buttons-center">
+            <button on:click={()=>changeCoordinates(0, -1)}>Up</button>
+            <button on:click={()=>changeCoordinates(0, 1)}>Down</button>
+        </div>
+        <button on:click={()=>changeCoordinates(1, 0)}>Right</button>
+    </div>
+</div>
 
-{#if DynamicComponent}
-  <Widget this={DynamicComponent} />
-{:else if fileContent}
-  <!-- <pre>{fileContent}</pre> -->
-{:else if error}
-  <p>Error: {error}</p>
-{:else}
-  <p>Loading component...</p>
-{/if}
+
+<style>
+    .map-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        position:absolute;
+        right: 20px;
+        bottom: 20px;
+    }
+    button {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+    button:hover {
+        background-color: #f0f0f0;
+    }
+    button:active {
+        background-color: #e0e0e0;
+    }
+    button:focus {
+        outline: none;
+    }
+
+    .map-buttons-center {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+</style>
