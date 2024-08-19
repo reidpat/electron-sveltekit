@@ -10,37 +10,58 @@
         y: 0,
     };
 
-    let map;
+    let map = null;
 
-    $: () => {
-        if (map) {
-            fileName = map[currentCoordinates.x][currentCoordinates.y].name;
-            console.log(fileName);
-        }
-    };
+    $: fileName = map && map[currentCoordinates.x][currentCoordinates.y].name;
 
     onMount(async () => {
         let fileContent = await window.electronAPI.readLocalFile(
             `C:/frames/maps/${mapName}.json`,
         );
         map = await JSON.parse(fileContent);
-        fileName = map[currentCoordinates.x][currentCoordinates.y].name;
         console.log(map);
+
+        window.addEventListener('keydown', handleKeyPress);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyPress);
+        };
     });
 
     function changeCoordinates(x, y) {
-        if (
-            !map[currentCoordinates.x + x] ||
-            !map[currentCoordinates.x + x][currentCoordinates.y + y]
-        ) {
-            return;
+        if (canMove(x, y)) {
+            currentCoordinates.x += x;
+            currentCoordinates.y += y;
+            console.log(currentCoordinates);
         }
-        currentCoordinates.x += x;
-        currentCoordinates.y += y;
-        fileName = map[currentCoordinates.x][currentCoordinates.y].name;
-        console.log(currentCoordinates);
+    }
+
+    $: canMove = (x, y) => {
+        if (!map) return false;
+        const newX = currentCoordinates.x + x;
+        const newY = currentCoordinates.y + y;
+        return map[newX] && map[newX][newY] !== undefined;
+    };
+
+    function handleKeyPress(event) {
+        switch(event.key) {
+            case 'ArrowLeft':
+                changeCoordinates(-1, 0);
+                break;
+            case 'ArrowRight':
+                changeCoordinates(1, 0);
+                break;
+            case 'ArrowUp':
+                changeCoordinates(0, -1);
+                break;
+            case 'ArrowDown':
+                changeCoordinates(0, 1);
+                break;
+        }
     }
 </script>
+
+<svelte:window on:keydown={handleKeyPress} />
 
 <div class="slide-container">
     {#if fileName}
@@ -48,12 +69,12 @@
     {/if}
 </div>
 <div class="map-buttons">
-    <button on:click={() => changeCoordinates(-1, 0)}>Left</button>
+    <button class="outline {canMove(-1, 0) ? '' : 'secondary'}" on:click={() => changeCoordinates(-1, 0)}>Left</button>
     <div class="map-buttons-center">
-        <button on:click={() => changeCoordinates(0, -1)}>Up</button>
-        <button on:click={() => changeCoordinates(0, 1)}>Down</button>
+        <button class="outline {canMove(0, -1) ? '' : 'secondary'}" on:click={() => changeCoordinates(0, -1)}>Up</button>
+        <button class="outline {canMove(0, 1) ? '' : 'secondary'}" on:click={() => changeCoordinates(0, 1)}>Down</button>
     </div>
-    <button on:click={() => changeCoordinates(1, 0)}>Right</button>
+    <button class="outline {canMove(1, 0) ? '' : 'secondary'}" on:click={() => changeCoordinates(1, 0)}>Right</button>
 </div>
 
 <style>
