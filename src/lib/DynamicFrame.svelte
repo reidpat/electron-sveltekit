@@ -83,9 +83,10 @@
     await loadComponent();
   });
 </script>
-
+<div class="top-buttons">
 <button on:click={loadComponent}>Reload Component</button>
 <button on:click={compile}>Compile</button>
+</div>
 
 {#if DynamicComponent}
   <Widget this={DynamicComponent} />
@@ -96,3 +97,10 @@
 {:else}
   <p>Loading component...</p>
 {/if}
+
+<style>
+  .top-buttons {
+    position: absolute;
+    top: 0;
+  }
+</style>

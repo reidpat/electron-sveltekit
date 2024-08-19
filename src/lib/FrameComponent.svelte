@@ -33,3 +33,9 @@
   </script>
   
   <div bind:this={target} />
+
+  <style>
+    div{
+      height: 100%;
+    }
+  </style>

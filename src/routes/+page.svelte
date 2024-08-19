@@ -29,7 +29,10 @@
     });
 
     function changeCoordinates(x, y) {
-        if(!map[currentCoordinates.x + x] || !map[currentCoordinates.x + x][currentCoordinates.y + y]) {
+        if (
+            !map[currentCoordinates.x + x] ||
+            !map[currentCoordinates.x + x][currentCoordinates.y + y]
+        ) {
             return;
         }
         currentCoordinates.x += x;
@@ -39,27 +42,29 @@
     }
 </script>
 
-<div>
+<div class="slide-container">
     {#if fileName}
-        <DynamicFrame bind:fileName={fileName} />
+        <DynamicFrame bind:fileName />
     {/if}
-    <div class="map-buttons">
-        <button on:click={()=>changeCoordinates(-1, 0)}>Left</button>
-        <div class="map-buttons-center">
-            <button on:click={()=>changeCoordinates(0, -1)}>Up</button>
-            <button on:click={()=>changeCoordinates(0, 1)}>Down</button>
-        </div>
-        <button on:click={()=>changeCoordinates(1, 0)}>Right</button>
+</div>
+<div class="map-buttons">
+    <button on:click={() => changeCoordinates(-1, 0)}>Left</button>
+    <div class="map-buttons-center">
+        <button on:click={() => changeCoordinates(0, -1)}>Up</button>
+        <button on:click={() => changeCoordinates(0, 1)}>Down</button>
     </div>
+    <button on:click={() => changeCoordinates(1, 0)}>Right</button>
 </div>
 
-
 <style>
+    .slide-container{
+        height: 100vh;
+    }
     .map-buttons {
         display: flex;
         justify-content: center;
         gap: 1rem;
-        position:absolute;
+        position: absolute;
         right: 20px;
         bottom: 20px;
     }
