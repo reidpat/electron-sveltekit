@@ -1,7 +1,7 @@
 <script>
     import { fly } from "svelte/transition";
 
-    let vsCodePath = "C:/Coding/frames";
+    let vsCodePath = "C:/frames/frames";
 
     export let fileName;
     export let loadComponent;
@@ -43,7 +43,7 @@
             <button on:click={()=> compile(fileName)}>Compile</button>
             <button on:click={compileAllInMap}>Compile All</button>
             <a
-                href="vscode://file/{vsCodePath}\src\lib\frames\{fileName}.svelte"
+                href="vscode://file/{vsCodePath}/{fileName}.svelte"
                 ><button>Edit</button></a
             >
         </div>
