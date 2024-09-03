@@ -31,6 +31,8 @@
             }
         }
     }
+
+    // let codePath = vscode://file/{vsCodePath}/{fileName}.svelte
 </script>
 
 <div class="top-buttons">
@@ -43,7 +45,7 @@
             <button on:click={()=> compile(fileName)}>Compile</button>
             <button on:click={compileAllInMap}>Compile All</button>
             <a
-                href="vscode://file/{vsCodePath}/{fileName}.svelte"
+                href="/edit"
                 ><button>Edit</button></a
             >
         </div>
