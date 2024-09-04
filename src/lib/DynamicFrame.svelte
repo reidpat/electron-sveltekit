@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
-  import Widget from "./FrameComponent.svelte";
+  import FrameComponent from "./FrameComponent.svelte";
 
   let DynamicComponent;
   let fileContent;
@@ -90,7 +90,7 @@
 <TopNav {fileName} {loadComponent} {map}/>
 
 {#if DynamicComponent}
-  <Widget this={DynamicComponent} />
+  <FrameComponent this={DynamicComponent} />
 {:else if fileContent}
   <!-- <pre>{fileContent}</pre> -->
 {:else if error}
